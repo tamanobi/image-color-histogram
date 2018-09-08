@@ -20,7 +20,7 @@ def decreaseColor(d: np.ndarray) -> np.ndarray:
     return d
 
 def split(d: np.ndarray) -> tuple:
-    return image[:,:,0], image[:,:,1], image[:,:,2]
+    return (image[:,:,0], image[:,:,1], image[:,:,2])
 
 def merge(r, g, b) -> np.ndarray:
     result = np.empty(shape=(r.shape[0], r.shape[1], 3), dtype=np.uint8)
@@ -29,24 +29,31 @@ def merge(r, g, b) -> np.ndarray:
     result[:,:,2] = b
     return result
 
-p = Path(IMAGE_PATH)
-if not p.exists():
-    exit()
+def pattern1(input_image: Path, output: Path) -> None:
+    """not using pillow"""
 
-image = io.imread(str(p))
-image_pillow = PImage.open(str(p))
-image_pillow = image_pillow.quantize(64)
-image_pillow = image_pillow.convert('RGB')
-image_pillow.save('./output2.jpg')
+    image = io.imread(str(input_image))
+    r, g, b = split(image)
 
-exit()
-print(image.shape)
-r, g, b = split(image)
+    r = decreaseColor(r)
+    b = decreaseColor(b)
+    g = decreaseColor(g)
 
-r = decreaseColor(r)
-b = decreaseColor(b)
-g = decreaseColor(g)
+    io.imsave(str(output), merge(r, g, b))
 
-io.imsave('./output.jpg', merge(r, g, b))
+def pattern2(input_image: Path, output: Path) -> None:
+    """using pillow"""
+    image_pillow = PImage.open(str(input_image))
+    #(r, g, b) = image_pillow.split()
+    #r, b, g = r.quantize(4).convert('L'),g.quantize(4).convert('L'),b.quantize(4).convert('L')
+    #res = PImage.merge('RGB', [r,g,b])
+    res = image_pillow.quantize(64).convert('RGB')
+    res.save(str(output))
 
-print(r)
+if __name__ == '__main__':
+    p = Path(IMAGE_PATH)
+    if not p.exists():
+        exit()
+
+    #pattern1(p, Path('./output.jpg'))
+    pattern2(p, Path('./output2.jpg'))
